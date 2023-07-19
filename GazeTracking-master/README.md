@@ -8,7 +8,6 @@ git clone https://github.com/ArturK123/CustomProject_MovingEyes/
 ### For Pip install
 Install these dependencies (NumPy, OpenCV, Dlib):
 
-```shell
 pip install -r requirements.txt
 ```
 
