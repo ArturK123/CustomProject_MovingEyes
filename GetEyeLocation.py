@@ -116,7 +116,7 @@ while True:
         else:
             speed = 12
 
-        if (abs(current_int_x - lefteye_pos_x) > 20 and abs(current_int_y - lefteye_pos_y) > 20) or (abs(current_int_x - lefteye_pos_x) > 40) or (abs(current_int_y - lefteye_pos_y) > 40):
+        if (abs(current_int_x - lefteye_pos_x) > 20 and abs(current_int_y - lefteye_pos_y) > 20) or (abs(current_int_x - lefteye_pos_x) > 40) or (abs(current_int_y - lefteye_pos_y) > 40) or abs(eyelid_pos - rect_3.y) > 100:
             for i in range(int(len(values_animated)/speed)):
                 # eyelid_pos_x = abs(int(left[1].y * frame_h - left[0].y * frame_h))*10
 
@@ -146,7 +146,6 @@ while True:
 
                 pygame.display.flip()
                 step = step + speed
-        elif abs(eyelid_pos - rect_3.y) > 50:
             for i in range(int(len(values_animated_eyelid)/10)):
                 scrn.fill(0)
 
