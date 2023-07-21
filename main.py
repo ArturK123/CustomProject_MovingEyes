@@ -19,9 +19,6 @@ import datetime
 X = 2400
 Y = 1080
 
-upper_colormap = Image.open('upper.png')
-lower_colormap = Image.open('lower.png')
-
 #Eye Cordinates
 Center_Down = 270, 370
 Center_Up = 270, -45
@@ -32,13 +29,6 @@ Left_Down = 100, 355
 Right_Down = 500, 345
 Right = 570, 160
 Right_Up = 520,20
-
-#Backround Colormaping
-upper = np.array(upper_colormap)
-upper_i = np.invert(upper_colormap)
-
-lower = np.array(lower_colormap)
-lower_i = np.invert(lower_colormap)
 
 #Activate the pygame library
 pygame.init()
@@ -242,113 +232,115 @@ webcam = cv2.VideoCapture(0)
 index = 0
 closed = True
 
-while True:
-    # We get a new frame from the webcam
-    _, frame = webcam.read()
 
-    # We send this frame to GazeTracking to analyze it
-    gaze.refresh(frame)
+if __name__ == "__main__":
+    while True:
+        # We get a new frame from the webcam
+        _, frame = webcam.read()
 
-    horizontal_ratio = gaze.horizontal_ratio()
-    vertical_ratio = gaze.vertical_ratio()
+        # We send this frame to GazeTracking to analyze it
+        gaze.refresh(frame)
 
-    frame = gaze.annotated_frame()
+        horizontal_ratio = gaze.horizontal_ratio()
+        vertical_ratio = gaze.vertical_ratio()
 
-    frameCollection[index] = [horizontal_ratio, vertical_ratio]
-    animationYN = 0
-    try:
-        if abs(frameCollection[0][0] - frameCollection[1][0]) <= 0.03:
-            animationYN = 1
-        elif abs(frameCollection[0][1] - frameCollection[1][1]) <= 0.03:
-            animationYN = 1
-        else:
-            animationYN = 0
-    except:
-        pass
+        frame = gaze.annotated_frame()
 
-    try:
-        if gaze.vertical_ratio() <= 0.4:
-            values = [values[0], 20]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, values[0], 20)
+        frameCollection[index] = [horizontal_ratio, vertical_ratio]
+        animationYN = 0
+        try:
+            if abs(frameCollection[0][0] - frameCollection[1][0]) <= 0.03:
+                animationYN = 1
+            elif abs(frameCollection[0][1] - frameCollection[1][1]) <= 0.03:
+                animationYN = 1
+            else:
+                animationYN = 0
+        except:
+            pass
+
+        try:
+            if gaze.vertical_ratio() <= 0.4:
+                values = [values[0], 20]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, values[0], 20)
+                my_number = 0
+                doUpdate(current_number, timer, my_number, animationYN, values_animated)
+                current_number = 0
+            elif gaze.vertical_ratio() >= 0.60:
+                values = [values[0], 360]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, values[0], 360)
+                my_number = 0
+                doUpdate(current_number, timer, my_number, animationYN, values_animated)
+                current_number = 0
+            else:
+                values = [values[0], Center[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, values[0], Center[1])
+                my_number = 0
+                doUpdate(current_number, timer, my_number, animationYN, values_animated)
+                current_number = 0
+        except:
+            pass
+
+
+
+        if gaze.is_blinking() and current_number != 150:
+            # my_number = 150
+            # current_number = 150
+            # doUpdate_Animate(0, timer, 150)
+            pass
+
+
+        elif gaze.is_right():
+            speed = gaze.horizontal_ratio()
+            if speed == 0.0:
+                values = [Right[0], values[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, Right[0], values[1])
+            elif speed >= 0.29 and speed <= 0.51:
+                values = [400, values[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, 400, values[1])
+            else:
+                values = [Right[0], values[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, Right[0], values[1])
+            doUpdate(current_number, timer, my_number, animationYN, values_animated)
+            current_number = 0
+
+
+        elif gaze.is_left():
+            speed = gaze.horizontal_ratio()
+            if speed == 1.0:
+                values = [Left[0], values[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, Left[0], values[1])
+            elif speed >= 0.5 and speed <= 0.7:
+                values = [110, values[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, 110, values[1])
+            else:
+                values = [Left[0], values[1]]
+                values_animated = getMovingValues(rect_2.x, rect_2.y, Left[0], values[1])
+                my_number = 0
+            doUpdate(current_number, timer, my_number, animationYN, values_animated)
+            current_number = 0
+
+        elif gaze.is_center():
+            values = [Center[0], values[1]]
+            values_animated = getMovingValues(rect_2.x, rect_2.y, Center[0], values[1])
             my_number = 0
             doUpdate(current_number, timer, my_number, animationYN, values_animated)
             current_number = 0
-        elif gaze.vertical_ratio() >= 0.60:
-            values = [values[0], 360]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, values[0], 360)
-            my_number = 0
-            doUpdate(current_number, timer, my_number, animationYN, values_animated)
-            current_number = 0
+
+        try:
+            print("Vertical: "+str(int(gaze.vertical_ratio()*100)) + ", Horizontal: "+str(int(gaze.horizontal_ratio()*100)))
+        except:
+            print("No Eyes")
+
+        #clock.tick(60)
+
+        #cv2.imshow("CameraWindow", frame)
+
+        for i in pygame.event.get():
+            if i.type == pygame.QUIT:
+                status = False
+        if index == 1:
+            index -= 1
         else:
-            values = [values[0], Center[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, values[0], Center[1])
-            my_number = 0
-            doUpdate(current_number, timer, my_number, animationYN, values_animated)
-            current_number = 0
-    except:
-        pass
-
-
-
-    if gaze.is_blinking() and current_number != 150:
-        # my_number = 150
-        # current_number = 150
-        # doUpdate_Animate(0, timer, 150)
-        pass
-
-
-    elif gaze.is_right():
-        speed = gaze.horizontal_ratio()
-        if speed == 0.0:
-            values = [Right[0], values[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, Right[0], values[1])
-        elif speed >= 0.29 and speed <= 0.51:
-            values = [400, values[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, 400, values[1])
-        else:
-            values = [Right[0], values[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, Right[0], values[1])
-        doUpdate(current_number, timer, my_number, animationYN, values_animated)
-        current_number = 0
-
-
-    elif gaze.is_left():
-        speed = gaze.horizontal_ratio()
-        if speed == 1.0:
-            values = [Left[0], values[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, Left[0], values[1])
-        elif speed >= 0.5 and speed <= 0.7:
-            values = [110, values[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, 110, values[1])
-        else:
-            values = [Left[0], values[1]]
-            values_animated = getMovingValues(rect_2.x, rect_2.y, Left[0], values[1])
-            my_number = 0
-        doUpdate(current_number, timer, my_number, animationYN, values_animated)
-        current_number = 0
-
-    elif gaze.is_center():
-        values = [Center[0], values[1]]
-        values_animated = getMovingValues(rect_2.x, rect_2.y, Center[0], values[1])
-        my_number = 0
-        doUpdate(current_number, timer, my_number, animationYN, values_animated)
-        current_number = 0
-
-    try:
-        print("Vertical: "+str(int(gaze.vertical_ratio()*100)) + ", Horizontal: "+str(int(gaze.horizontal_ratio()*100)))
-    except:
-        print("No Eyes")
-
-    #clock.tick(60)
-
-    #cv2.imshow("CameraWindow", frame)
-
-    for i in pygame.event.get():
-        if i.type == pygame.QUIT:
-            status = False
-    if index == 1:
-        index -= 1
-    else:
-        index += 1
-webcam.release()
-cv2.destroyAllWindows()
+            index += 1
+    webcam.release()
+    cv2.destroyAllWindows()
